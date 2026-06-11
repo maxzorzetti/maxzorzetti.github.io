@@ -1,0 +1,9 @@
+---
+layout: base.njk
+---
+<header class="post-header">
+  <p class="meta">{{ metaLabel }}</p>
+  <h1>{{ title }}</h1>
+  {% if deck %}<p class="deck">{{ deck }}</p>{% endif %}
+</header>
+{{ content | safe }}

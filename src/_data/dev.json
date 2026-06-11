@@ -1,0 +1,20 @@
+[
+  {
+    "meta": "zsh · dotfiles",
+    "title": "bashy",
+    "url": "#",
+    "blurb": "The opinionated little config that runs my shell — and, lately, this page."
+  },
+  {
+    "meta": "javascript",
+    "title": "drifting squares",
+    "url": "#",
+    "blurb": "The animated background behind this very page, in one dependency-free file."
+  },
+  {
+    "meta": "git",
+    "title": "worktree-flow",
+    "url": "#",
+    "blurb": "Scripts for a worktree-per-branch workflow that never touches main."
+  }
+]

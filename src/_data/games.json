@@ -1,0 +1,20 @@
+[
+  {
+    "meta": "2025 · browser",
+    "title": "square drift",
+    "url": "#",
+    "blurb": "A meditative puzzler about herding reluctant squares into tidy columns."
+  },
+  {
+    "meta": "2024 · ludum dare",
+    "title": "long fall",
+    "url": "#",
+    "blurb": "One-button platformer where the level scrolls up and you, pointedly, do not."
+  },
+  {
+    "meta": "2023 · prototype",
+    "title": "tiny fleet",
+    "url": "#",
+    "blurb": "Idle armada management rendered entirely in 80×24 characters."
+  }
+]

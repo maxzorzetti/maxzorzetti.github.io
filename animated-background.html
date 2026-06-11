@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>max zorzetti</title>
+<style>
+  :root {
+    --bg: #101216; /* near-black, slightly cool so it's easy on the eyes */
+    --ink: #dde1e7;      /* headings, emphasis */
+    --body-text: #b4bbc5;
+    --muted: #7f8692;    /* meta, deck, nav */
+    --hairline: rgba(255, 255, 255, 0.10);
+    --serif: "Iowan Old Style", Charter, Georgia, "Times New Roman", serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--body-text);
+    font-family: var(--serif);
+  }
+
+  /* ---- animated background ---- */
+
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .col {
+    position: relative;
+    flex: none;
+  }
+
+  .scroller {
+    position: absolute;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    will-change: transform;
+  }
+
+  .set {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+  }
+
+  .sq {
+    box-sizing: border-box;
+    border-style: solid;
+    flex: none;
+  }
+
+  /* ---- page chrome: top bar + post header ---- */
+
+  .site,
+  main {
+    max-width: 42rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .site {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.75rem;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65em;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+  }
+
+  .brand-mark {
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    box-sizing: border-box;
+    border: 0.2em solid currentColor;
+    border-radius: 1px;
+    transform: rotate(20deg);
+    opacity: 0.85;
+  }
+
+  .site nav {
+    display: flex;
+    gap: 1.4rem;
+  }
+
+  .site nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .site nav a:hover,
+  .brand:hover {
+    color: #fff;
+  }
+
+  /* every link reserves the marker space so switching tabs never shifts layout */
+  .site nav a::before {
+    content: "";
+    display: inline-block;
+    width: 0.4em;
+    height: 0.4em;
+    margin-right: 0.5em;
+    border-radius: 1px;
+    vertical-align: 0.08em;
+  }
+
+  .site nav a[aria-current="page"] {
+    color: var(--ink);
+  }
+
+  .site nav a[aria-current="page"]::before {
+    background: currentColor;
+  }
+
+  .brand[aria-current="page"] {
+    color: #fff;
+  }
+
+  .post-header {
+    margin: 5rem 0 3rem;
+    padding-bottom: 2.25rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .meta {
+    margin: 0 0 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  .post-header h1 {
+    margin: 0 0 1.1rem;
+    font-size: clamp(2.1rem, 5.5vw, 2.9rem);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+
+  .deck {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
+  /* ---- content ---- */
+
+  main {
+    padding-bottom: 7rem;
+  }
+
+  main p {
+    margin: 0 0 1.5rem;
+    font-size: 1.06rem;
+    line-height: 1.75;
+  }
+
+  main h2 {
+    margin: 2.75rem 0 1.1rem;
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  main a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.25);
+    text-underline-offset: 3px;
+  }
+
+  main a:hover {
+    text-decoration-color: rgba(255, 255, 255, 0.6);
+  }
+
+  main code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 4px;
+  }
+
+  /* ---- index lists (games, dev) ---- */
+
+  .index {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .index li {
+    padding: 1.6rem 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .index .meta {
+    margin: 0 0 0.55rem;
+  }
+
+  .index h2 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+
+  .index h2 a {
+    text-decoration: none;
+  }
+
+  .index h2 a:hover {
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.35);
+    text-underline-offset: 4px;
+  }
+
+  .index h2 + p {
+    margin: 0.6rem 0 0;
+  }
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+
+<header class="site">
+  <a class="brand" href="#about"><span class="brand-mark" aria-hidden="true"></span>max zorzetti</a>
+  <nav>
+    <a href="#blog">blog</a>
+    <a href="#games">games</a>
+    <a href="#dev">dev</a>
+    <a href="#about">about</a>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-blog">
+  <article>
+    <header class="post-header">
+      <p class="meta">June 10, 2026 · 6 min read</p>
+      <h1>Quiet interfaces: backgrounds that know their place</h1>
+      <p class="deck">Notes on building an animated backdrop that adds depth without ever asking for attention.</p>
+    </header>
+
+    <p>Most animated backgrounds fail the same way: they want to be looked at. The goal here was the opposite — a surface that gives the page a sense of depth and motion, but that you stop noticing within seconds of reading.</p>
+
+    <h2>Restraint as a feature</h2>
+
+    <p>Every parameter errs quiet. The squares are outlined at five to ten percent white, the columns drift at a few pixels per second in random directions, and only one square in two hundred is filled in. Scroll for a paragraph or two and check whether you can still point at one — that's the test.</p>
+
+    <p>The whole thing is one <code>&lt;div&gt;</code> of CSS-transformed columns built by a few dozen lines of vanilla JavaScript — no canvas, no dependencies. Each column loops seamlessly by translating exactly one copy of its pattern, an old <a href="#">marquee trick</a> that compositors are very good at.</p>
+
+    <p>Everything is tunable from a small config block: density, speed, opacity, size. The rest of this page is placeholder text so you can judge the reading experience — which is, after all, the only thing a background should serve.</p>
+  </article>
+  </section>
+
+  <section id="tab-games" hidden>
+    <header class="post-header">
+      <p class="meta">side projects · jams</p>
+      <h1>Games</h1>
+      <p class="deck">Small things shipped, jammed, or abandoned honorably.</p>
+    </header>
+    <ul class="index">
+      <li>
+        <p class="meta">2025 · browser</p>
+        <h2><a href="#games">square drift</a></h2>
+        <p>A meditative puzzler about herding reluctant squares into tidy columns.</p>
+      </li>
+      <li>
+        <p class="meta">2024 · ludum dare</p>
+        <h2><a href="#games">long fall</a></h2>
+        <p>One-button platformer where the level scrolls up and you, pointedly, do not.</p>
+      </li>
+      <li>
+        <p class="meta">2023 · prototype</p>
+        <h2><a href="#games">tiny fleet</a></h2>
+        <p>Idle armada management rendered entirely in 80×24 characters.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section id="tab-dev" hidden>
+    <header class="post-header">
+      <p class="meta">tools · experiments</p>
+      <h1>Dev</h1>
+      <p class="deck">Things I build to make the terminal a nicer place to live.</p>
+    </header>
+    <ul class="index">
+      <li>
+        <p class="meta">zsh · dotfiles</p>
+        <h2><a href="#dev">bashy</a></h2>
+        <p>The opinionated little config that runs my shell — and, lately, this page.</p>
+      </li>
+      <li>
+        <p class="meta">javascript</p>
+        <h2><a href="#dev">drifting squares</a></h2>
+        <p>The animated background behind this very page, in one dependency-free file.</p>
+      </li>
+      <li>
+        <p class="meta">git</p>
+        <h2><a href="#dev">worktree-flow</a></h2>
+        <p>Scripts for a worktree-per-branch workflow that never touches main.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section id="tab-about" hidden>
+    <header class="post-header">
+      <p class="meta">about</p>
+      <h1>Max Zorzetti</h1>
+      <p class="deck">Engineer, tinkerer, and reluctant front-end designer.</p>
+    </header>
+    <p>I build SDKs and developer tooling for mobile games by day, and collect small terminal utilities the way other people collect houseplants. This site is where the writing, the games, and the tools wash up.</p>
+    <p>The fastest way to reach me is <a href="#about">email</a>; the code lives on <a href="#about">github</a>, and the posts have an <a href="#about">rss feed</a>. Replace any of this with the truth at your leisure.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const CONFIG = {
+    square: 28,           // square side (px)
+    gap: 9,               // space between squares and between columns (px)
+    border: 1,            // outline width (px)
+    radius: 1,            // corner radius (px); set 0 for sharp corners
+    alpha: [0.05, 0.10],  // per-square outline opacity range (the "subtle" knob)
+    speed: [2.5, 8],      // per-column scroll speed range (px per second)
+    density: 0.65,        // chance a grid cell contains a square (rest stay empty)
+    fillChance: 0.005,    // chance a square is filled in instead of outline-only
+    thickChance: 0.01,    // chance a square gets a thick inset outline instead
+    thickBorder: 4,       // outline width for those squares (px, grows inward)
+  };
+
+  const bg = document.getElementById('bg');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let animations = [];
+
+  const rand = (min, max) => min + Math.random() * (max - min);
+
+  function build() {
+    animations.forEach(a => a.cancel());
+    animations = [];
+    bg.replaceChildren();
+    bg.style.gap = CONFIG.gap + 'px';
+
+    const period = CONFIG.square + CONFIG.gap;
+    const cols = Math.ceil((innerWidth + CONFIG.gap) / period) + 1;
+    const rows = Math.ceil((innerHeight + CONFIG.gap) / period) + 1;
+    const setHeight = rows * period; // one full repeat of the pattern
+
+    for (let c = 0; c < cols; c++) {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.style.width = CONFIG.square + 'px';
+
+      const set = document.createElement('div');
+      set.className = 'set';
+      for (let r = 0; r < rows; r++) {
+        const sq = document.createElement('div');
+        sq.className = 'sq';
+        sq.style.width = CONFIG.square + 'px';
+        sq.style.height = CONFIG.square + 'px';
+        sq.style.marginBottom = CONFIG.gap + 'px';
+        if (Math.random() < CONFIG.density) {
+          const tint = `rgba(255, 255, 255, ${rand(...CONFIG.alpha).toFixed(3)})`;
+          sq.style.borderWidth = CONFIG.border + 'px';
+          sq.style.borderRadius = CONFIG.radius + 'px';
+          sq.style.borderColor = tint;
+          const roll = Math.random();
+          if (roll < CONFIG.fillChance) {
+            // background paints under the border too; a transparent border keeps
+            // the edge from stacking to double alpha and reading brighter
+            sq.style.backgroundColor = tint;
+            sq.style.borderColor = 'transparent';
+          } else if (roll < CONFIG.fillChance + CONFIG.thickChance) {
+            sq.style.borderWidth = CONFIG.thickBorder + 'px'; // border-box: thickens inward
+          }
+        } else {
+          sq.style.visibility = 'hidden'; // empty cell — keeps the grid spacing
+        }
+        set.appendChild(sq);
+      }
+
+      const scroller = document.createElement('div');
+      scroller.className = 'scroller';
+      // two identical copies; translating by exactly one copy loops seamlessly
+      scroller.append(set, set.cloneNode(true));
+      col.appendChild(scroller);
+      bg.appendChild(col);
+
+      if (reduceMotion.matches) continue;
+
+      const up = Math.random() < 0.5;
+      const [from, to] = up ? [0, -setHeight] : [-setHeight, 0];
+      const duration = (setHeight / rand(...CONFIG.speed)) * 1000;
+      const anim = scroller.animate(
+        [{ transform: `translateY(${from}px)` }, { transform: `translateY(${to}px)` }],
+        { duration, iterations: Infinity, easing: 'linear' }
+      );
+      anim.currentTime = Math.random() * duration; // random phase so columns start staggered
+      animations.push(anim);
+    }
+  }
+
+  let resizeTimer;
+  addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(build, 150);
+  });
+  reduceMotion.addEventListener?.('change', build);
+
+  build();
+})();
+
+// ---- content tabs (blog / games / dev) ----
+(() => {
+  const TABS = ['blog', 'games', 'dev', 'about'];
+
+  function show() {
+    const hash = location.hash.slice(1);
+    const tab = TABS.includes(hash) ? hash : 'blog';
+    for (const name of TABS) {
+      document.getElementById('tab-' + name).hidden = name !== tab;
+      // both the brand and the nav button point at #about — light up all matches
+      for (const link of document.querySelectorAll(`.site a[href="#${name}"]`)) {
+        if (name === tab) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      }
+    }
+    scrollTo(0, 0);
+  }
+
+  addEventListener('hashchange', show);
+  show();
+})();
+</script>
+</body>
+</html>
