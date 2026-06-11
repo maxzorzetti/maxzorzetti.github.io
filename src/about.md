@@ -3,9 +3,9 @@ layout: page.njk
 section: about
 metaLabel: about
 title: Max Zorzetti
-deck: Engineer, tinkerer, and reluctant front-end designer.
+deck: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 ---
 
-I build SDKs and developer tooling for mobile games by day, and collect small terminal utilities the way other people collect houseplants. This site is where the writing, the games, and the tools wash up.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
 
-The fastest way to reach me is [email](#); the code lives on [github](#), and the posts have an [rss feed](#). Replace any of this with the truth at your leisure.
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur: [lorem](#), [ipsum](#), [dolor](#).

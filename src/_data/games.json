@@ -1,20 +1,20 @@
 [
   {
-    "meta": "2025 · browser",
-    "title": "square drift",
+    "meta": "2025 · lorem",
+    "title": "lorem ipsum",
     "url": "#",
-    "blurb": "A meditative puzzler about herding reluctant squares into tidy columns."
+    "blurb": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium."
   },
   {
-    "meta": "2024 · ludum dare",
-    "title": "long fall",
+    "meta": "2024 · ipsum",
+    "title": "dolor sit amet",
     "url": "#",
-    "blurb": "One-button platformer where the level scrolls up and you, pointedly, do not."
+    "blurb": "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit."
   },
   {
-    "meta": "2023 · prototype",
-    "title": "tiny fleet",
+    "meta": "2023 · dolor",
+    "title": "consectetur",
     "url": "#",
-    "blurb": "Idle armada management rendered entirely in 80×24 characters."
+    "blurb": "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet."
   }
 ]

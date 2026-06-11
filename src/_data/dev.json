@@ -1,20 +1,20 @@
 [
   {
-    "meta": "zsh · dotfiles",
-    "title": "bashy",
+    "meta": "lorem · ipsum",
+    "title": "dolor",
     "url": "#",
-    "blurb": "The opinionated little config that runs my shell — and, lately, this page."
+    "blurb": "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit."
   },
   {
-    "meta": "javascript",
-    "title": "drifting squares",
+    "meta": "ipsum",
+    "title": "sit amet",
     "url": "#",
-    "blurb": "The animated background behind this very page, in one dependency-free file."
+    "blurb": "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse."
   },
   {
-    "meta": "git",
-    "title": "worktree-flow",
+    "meta": "dolor",
+    "title": "adipiscing",
     "url": "#",
-    "blurb": "Scripts for a worktree-per-branch workflow that never touches main."
+    "blurb": "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis."
   }
 ]
