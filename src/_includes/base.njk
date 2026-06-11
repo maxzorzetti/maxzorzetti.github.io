@@ -335,6 +335,7 @@
     radius: 1,            // corner radius (px); set 0 for sharp corners
     alpha: [0.05, 0.10],  // per-square outline opacity range (the "subtle" knob)
     speed: [2.5, 8],      // per-column scroll speed range (px per second)
+    contentSpeedFactor: 0.4, // speed multiplier for columns behind the reading column
     density: 0.65,        // chance a grid cell contains a square (rest stay empty)
     fillChance: 0.005,    // chance a square is filled in instead of outline-only
     thickChance: 0.01,    // chance a square gets a thick inset outline instead
@@ -377,6 +378,10 @@
     const cols = Math.ceil((innerWidth + CONFIG.gap) / period) + 1;
     const rows = Math.ceil((builtCover + CONFIG.gap) / period) + 1;
     const setHeight = rows * period; // one full repeat of the pattern
+
+    // the reading column's horizontal band — columns behind it drift slower
+    const band = document.querySelector('main')?.getBoundingClientRect();
+    const startX = ((bg.clientWidth || innerWidth) - (cols * period - CONFIG.gap)) / 2;
 
     for (let c = 0; c < cols; c++) {
       const col = document.createElement('div');
@@ -422,7 +427,14 @@
 
       const up = random() < 0.5;
       const [from, to] = up ? [0, -setHeight] : [-setHeight, 0];
-      const duration = (setHeight / rand(...CONFIG.speed)) * 1000;
+      // draw the speed before applying the slowdown so the seeded sequence
+      // stays identical no matter where the content band happens to sit
+      let speed = rand(...CONFIG.speed);
+      const colLeft = startX + c * period;
+      if (band && colLeft + CONFIG.square > band.left && colLeft < band.right) {
+        speed *= CONFIG.contentSpeedFactor;
+      }
+      const duration = (setHeight / speed) * 1000;
       const anim = scroller.animate(
         [{ transform: `translateY(${from}px)` }, { transform: `translateY(${to}px)` }],
         { duration, iterations: Infinity, easing: 'linear' }
