@@ -163,6 +163,10 @@
     background:
       linear-gradient(var(--hairline), var(--hairline)) 0 24px / 100% 1px no-repeat,
       linear-gradient(to bottom, transparent, var(--bg) 40%, var(--bg) 60%, transparent);
+    /* taper the strip's left/right ends (line included) so squares are never
+       sliced by a hard vertical edge where the halo stops */
+    -webkit-mask: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+    mask: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
   }
 
   .meta {
