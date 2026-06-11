@@ -14,6 +14,9 @@ module.exports = function (eleventyConfig) {
   // post images: src/images/foo.jpg → /images/foo.jpg
   eleventyConfig.addPassthroughCopy("src/images");
 
+  // {key=value} / {.class} annotations in markdown, e.g. ![alt](/images/x.jpg){width=320}
+  eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(require("markdown-it-attrs")));
+
   eleventyConfig.addFilter("readableDate", (date) =>
     new Date(date).toLocaleDateString("en-US", {
       year: "numeric",

@@ -1,13 +1,20 @@
 ---
-title: Dolor sit amet consectetur
-deck: Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.
-date: 2026-05-22
+title: Longe overdue
+deck: Left on the backburner of my mind for the past 8 years.
+date: 2026-06-11
 ---
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+Alas, I've always wanted to build this website. With recent technology advancements, I can do that leisurely whilst chit chatting with my friends on Discord. Oh, the joys of tech.
 
-```bash
-lorem ipsum --dolor sit/amet --consectetur adipiscing
-```
+And by "always", I meant the last _9 years_. In 2018, I was still enrolled in the Apple Developer Academy program, and back then I managed to snag a scholarship to visit San José for that year's WWDC.
 
-Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.
+![a photo of the business card my sister designed for me](/images/placeholder.png){width=280}
+
+In those days, all of my scholar colleagues figured the event would'be a great chance for networking and whatnot. One student figured they should do _something_, and when we saw what that was, well, everyone followed suit: business cards.
+
+![a photo of the business card my sister designed for me](/images/placeholder.png){width=280}
+
+My lovely sister designed this _beaut_ for me. I promptly printed about a hundred of them and headed off overseas.
+In the end, I hardly managed to hand them out (which didn't surprise me at all, to be honest). 
+
+Ever since then I knew what my website had to look like.
