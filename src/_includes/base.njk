@@ -12,6 +12,9 @@
     --body-text: #b4bbc5;
     --muted: #7f8692;    /* meta, deck, nav */
     --hairline: rgba(255, 255, 255, 0.10);
+    --accent: #fc9e4f;     /* orange — active nav, link underlines */
+    --accent-hot: #f4442e; /* red — brand mark */
+    --gold: #edd382;       /* hovers */
     --serif: "Iowan Old Style", Charter, Georgia, "Times New Roman", serif;
     --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
@@ -102,6 +105,7 @@
     border-radius: 1px;
     transform: rotate(20deg);
     opacity: 0.85;
+    color: #fff; /* always white, regardless of the brand link's state */
   }
 
   .site nav {
@@ -116,7 +120,7 @@
 
   .site nav a:hover,
   .brand:hover {
-    color: #fff;
+    color: var(--gold);
   }
 
   /* every link reserves the marker space so navigation never shifts layout */
@@ -131,7 +135,7 @@
   }
 
   .site nav a[aria-current="page"] {
-    color: var(--ink);
+    color: var(--accent);
   }
 
   .site nav a[aria-current="page"]::before {
@@ -139,7 +143,7 @@
   }
 
   .brand[aria-current="page"] {
-    color: #fff;
+    color: var(--accent); /* matches the nav's active-orange convention */
   }
 
   .post-header {
@@ -225,12 +229,12 @@
   main a {
     color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: rgba(255, 255, 255, 0.25);
+    text-decoration-color: rgba(252, 158, 79, 0.4);
     text-underline-offset: 3px;
   }
 
   main a:hover {
-    text-decoration-color: rgba(255, 255, 255, 0.6);
+    text-decoration-color: rgba(252, 158, 79, 0.85);
   }
 
   main code {
@@ -289,7 +293,7 @@
 
   .index h2 a:hover {
     text-decoration: underline;
-    text-decoration-color: rgba(255, 255, 255, 0.35);
+    text-decoration-color: rgba(252, 158, 79, 0.6);
     text-underline-offset: 4px;
   }
 
@@ -363,6 +367,16 @@
     border: 1,            // outline width (px)
     radius: 1,            // corner radius (px); set 0 for sharp corners
     alpha: [0.05, 0.10],  // per-square outline opacity range (the "subtle" knob)
+    colorChance: 0,       // chance a square is a warm highlight instead of white (0 = all white)
+    colorAlpha: [0.18, 0.32], // highlight squares glow a bit brighter
+    // highlight tones; the weight (4th value) sets how often each appears —
+    // cream is the workhorse, red the rare firefly
+    palette: [
+      [242, 243, 174, 0.45], // cream  #f2f3ae
+      [237, 211, 130, 0.35], // gold   #edd382
+      [252, 158, 79,  0.15], // orange #fc9e4f
+      [244, 68,  46,  0.05], // red    #f4442e
+    ],
     speed: [2.5, 8],      // per-column scroll speed range (px per second)
     contentSpeedFactor: 0.4, // speed multiplier for columns behind the reading column
     density: 0.65,        // chance a grid cell contains a square (rest stay empty)
@@ -393,6 +407,12 @@
   function build() {
     const random = mulberry32(CONFIG.seed);
     const rand = (min, max) => min + random() * (max - min);
+    const paletteTotal = CONFIG.palette.reduce((sum, c) => sum + c[3], 0);
+    const pickColor = () => {
+      let t = random() * paletteTotal;
+      for (const c of CONFIG.palette) if ((t -= c[3]) <= 0) return c;
+      return CONFIG.palette[0];
+    };
     animations.forEach(a => a.cancel());
     animations = [];
     bg.replaceChildren();
@@ -426,7 +446,13 @@
         sq.style.height = CONFIG.square + 'px';
         sq.style.marginBottom = CONFIG.gap + 'px';
         if (random() < CONFIG.density) {
-          const tint = `rgba(255, 255, 255, ${rand(...CONFIG.alpha).toFixed(3)})`;
+          let tint;
+          if (random() < CONFIG.colorChance) {
+            const [r, g, b] = pickColor();
+            tint = `rgba(${r}, ${g}, ${b}, ${rand(...CONFIG.colorAlpha).toFixed(3)})`;
+          } else {
+            tint = `rgba(255, 255, 255, ${rand(...CONFIG.alpha).toFixed(3)})`;
+          }
           sq.style.borderWidth = CONFIG.border + 'px';
           sq.style.borderRadius = CONFIG.radius + 'px';
           sq.style.borderColor = tint;
