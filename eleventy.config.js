@@ -11,6 +11,9 @@ module.exports = function (eleventyConfig) {
   // ship it from src/ so clean rebuilds of docs/ don't drop the domain
   eleventyConfig.addPassthroughCopy("src/CNAME");
 
+  // post images: src/images/foo.jpg → /images/foo.jpg
+  eleventyConfig.addPassthroughCopy("src/images");
+
   eleventyConfig.addFilter("readableDate", (date) =>
     new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
