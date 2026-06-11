@@ -472,8 +472,14 @@
         speed *= CONFIG.contentSpeedFactor;
       }
       const duration = (setHeight / speed) * 1000;
+      // the constant micro-rotation keeps the transform non-axis-aligned so
+      // Firefox can't pixel-snap it — snapping makes sub-pixel-per-frame
+      // motion step visibly. 0.02deg shifts edges < 1px over a full column.
       const anim = scroller.animate(
-        [{ transform: `translateY(${from}px)` }, { transform: `translateY(${to}px)` }],
+        [
+          { transform: `translateY(${from}px) rotate(0.02deg)` },
+          { transform: `translateY(${to}px) rotate(0.02deg)` },
+        ],
         { duration, iterations: Infinity, easing: 'linear' }
       );
       // staggered phase anchored to the wall clock: at any given instant every
