@@ -143,9 +143,26 @@
   }
 
   .post-header {
+    position: relative;
     margin: 5rem 0 3rem;
     padding-bottom: 2.25rem;
-    border-bottom: 1px solid var(--hairline);
+  }
+
+  /* divider hairline plus a soft bg-colored halo fading out above and below,
+     so the line appears to quietly mask the drifting squares around it.
+     Drawn as one element so the halo can't paint over the line itself. */
+  .post-header::after,
+  .index li::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -24px;
+    height: 48px;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--hairline), var(--hairline)) 0 24px / 100% 1px no-repeat,
+      linear-gradient(to bottom, transparent, var(--bg) 40%, var(--bg) 60%, transparent);
   }
 
   .meta {
@@ -241,8 +258,8 @@
   }
 
   .index li {
+    position: relative;
     padding: 1.6rem 0;
-    border-bottom: 1px solid var(--hairline);
   }
 
   .index .meta {
@@ -304,7 +321,7 @@
     }
 
     .index li {
-      padding: 1.3rem 0;
+      padding: 1.5rem 0; /* keeps the 24px divider halo clear of the text */
     }
   }
 </style>
