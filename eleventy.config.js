@@ -7,6 +7,10 @@ module.exports = function (eleventyConfig) {
   // iOS universal links for LY74HQDURM.mz.LoginMaster — must ship with the site
   eleventyConfig.addPassthroughCopy("src/apple-app-site-association");
 
+  // custom-domain marker GitHub Pages reads from the publishing folder;
+  // ship it from src/ so clean rebuilds of docs/ don't drop the domain
+  eleventyConfig.addPassthroughCopy("src/CNAME");
+
   eleventyConfig.addFilter("readableDate", (date) =>
     new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
