@@ -1,6 +1,6 @@
 ---
 title: Long overdue
-deck: Something on the back burner for almost a decade.
+deck: Something on the back mburner for almost a decade.
 date: 2026-06-11
 ---
 
@@ -27,4 +27,4 @@ My lovely sister designed a _beaut_ of a card for me.
 I promptly printed about a hundred of them and headed off overseas.
 In the end, I hardly managed to hand them out (which wasn't a surprise at all, to be honest), but their design had me struck.
 
-Ever since then I knew what my website had to look like.
+Ever since then I knew what this website had to look like.
