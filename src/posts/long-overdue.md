@@ -1,6 +1,6 @@
 ---
 title: Long overdue
-deck: Something on the back mburner for almost a decade.
+deck: Something on the back burner for almost a decade.
 date: 2026-06-11
 ---
 
@@ -24,7 +24,7 @@ One student figured they should do _something_, and when we saw what that was, w
 ![a photo of the business card my sister designed for me](/images/placeholder.svg "I swear I'll find a picture of this"){width=280}
 
 My lovely sister designed a _beaut_ of a card for me.
-I promptly printed about a hundred of them and headed off overseas.
+I promptly had about a hundred of them printed and headed off overseas.
 In the end, I hardly managed to hand them out (which wasn't a surprise at all, to be honest), but their design had me struck.
 
 Ever since then I knew what this website had to look like.

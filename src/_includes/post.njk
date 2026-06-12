@@ -3,9 +3,10 @@ layout: base.njk
 ---
 <article>
   <header class="post-header">
-    <p class="meta">{{ page.date | readableDate }}</p>
+    <p class="meta">{{ page.date | readableDate(lang) }}</p>
     <h1>{{ title }}</h1>
     {% if deck %}<p class="deck">{{ deck }}</p>{% endif %}
   </header>
+  {% if autotranslated %}<p class="translation-note">{% if lang == "pt" %}original em <a href="{{ page.url | replace("/pt/", "/") }}">EN</a>{% else %}original in <a href="/pt{{ page.url }}">PT</a>{% endif %}</p>{% endif %}
   {{ content | safe }}
 </article>

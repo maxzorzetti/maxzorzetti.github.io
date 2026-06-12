@@ -26,6 +26,20 @@ npm start        # serve http://localhost:8080, rebuild + reload on save
 | About page | `src/about.md` |
 | Blog index | `src/index.njk` |
 
+## Languages
+
+English lives at the root (`/`, `/about/`, `/posts/…`); Portuguese mirrors it under
+`/pt/` with **identical slugs** (`/pt/`, `/pt/about/`, `/pt/posts/…`). The header's
+`en/pt` toggle links to the current page's twin by adding/removing the `/pt` prefix —
+so every piece of content needs **two files**, same filename, one in each tree:
+
+- `src/posts/my-post.md` ↔ `src/pt/posts/my-post.md`
+- `src/about.md` ↔ `src/pt/about.md`
+
+If a twin is missing, the toggle 404s on that page. `lang` is set by directory data
+(`src/pt/pt.json`); nav labels per language live in the `tNav` map in `base.njk`;
+dates localize via `readableDate(lang)`.
+
 A new post is one markdown file in `src/posts/`:
 
 ```markdown

@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#101216" />
+<link rel="alternate" hreflang="pt-BR" href="/pt/about/" />
 <title>Hi, I&#39;m Max — max zorzetti</title>
 <style>
   :root {
@@ -108,9 +109,41 @@
     color: #fff; /* always white, regardless of the brand link's state */
   }
 
+  .site-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
   .site nav {
     display: flex;
     gap: 1.4rem;
+  }
+
+  /* language toggle: current language is inert, the other is a link */
+  .lang {
+    margin: 0;
+    padding-left: 1.4rem;
+    border-left: 1px solid var(--hairline);
+    color: var(--muted);
+  }
+
+  .lang a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .lang a:hover {
+    color: var(--gold);
+  }
+
+  .lang .current {
+    color: var(--ink);
+  }
+
+  .lang .sep {
+    opacity: 0.5;
+    padding: 0 0.15em;
   }
 
   .site nav a {
@@ -334,6 +367,29 @@
     margin: 0.6rem 0 0;
   }
 
+  /* quiet note on machine-translated versions, tucked under the title divider;
+     -1.5rem against the header's 3rem bottom margin = 24px gap, exactly
+     clearing the divider halo */
+  .translation-note {
+    margin: -1.5rem 0 2.5rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+
+  .translation-note a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(252, 158, 79, 0.35);
+    text-underline-offset: 2px;
+  }
+
+  .translation-note a:hover {
+    color: var(--gold);
+  }
+
   /* ---- small screens ---- */
 
   @media (max-width: 600px) {
@@ -380,10 +436,13 @@
 
 <header class="site">
   <a class="brand" href="/about/" aria-current="page"><span class="brand-mark" aria-hidden="true"></span>max zorzetti</a>
-  <nav>
-    <a href="/">ramblings</a>
-    <a href="/about/" aria-current="page">me</a>
-  </nav>
+  <div class="site-right">
+    <nav>
+      <a href="/">ramblings</a>
+      <a href="/about/" aria-current="page">me</a>
+    </nav>
+    <p class="lang"><span class="current">en</span><span class="sep">/</span><a href="/pt/about/" hreflang="pt-BR">pt</a></p>
+  </div>
 </header>
 
 <main>
@@ -392,7 +451,7 @@
   <h1>Hi, I&#39;m Max</h1>
   <p class="deck">and here&#39;s a summary of me.</p>
 </header>
-<p>I've been a computers guy ever since I got a hold of one when I was a kid, and thigings have been gradually escalating since then.</p>
+<p>I've been a computers guy ever since I got a hold of one when I was a kid, and things have been gradually escalating since then.</p>
 <p>My hobbies include mostly geeky stuff, such as reading sci-fi and fantasy, tabletop role-playing games, and playing <em>a lot</em> of video games.
 I've dabbled in developing a few games too, but most of my project fizzle out before they are done, though I <em>swear</em> I'll get around to finishing them someday.</p>
 <p>Back in 2018 I graduated in Software Engineering summa cum laude (which I struggled a lot for!) and immediately segued into a master's degree, all at PUCRS.

@@ -1,9 +1,15 @@
+{%- set isPt = lang == "pt" -%}
+{%- set twinUrl = (page.url | replace("/pt/", "/")) if isPt else ("/pt" + page.url) -%}
+{%- set homeUrl = "/pt/" if isPt else "/" -%}
+{%- set aboutUrl = "/pt/about/" if isPt else "/about/" -%}
+{%- set tNav = { ramblings: "devaneios", me: "eu" } if isPt else { ramblings: "ramblings", me: "me" } -%}
 <!doctype html>
-<html lang="en">
+<html lang="{{ "pt-BR" if isPt else "en" }}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#101216" />
+<link rel="alternate" hreflang="{{ "en" if isPt else "pt-BR" }}" href="{{ twinUrl }}" />
 <title>{% if title %}{{ title }} — max zorzetti{% else %}max zorzetti{% endif %}</title>
 <style>
   :root {
@@ -108,9 +114,41 @@
     color: #fff; /* always white, regardless of the brand link's state */
   }
 
+  .site-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
   .site nav {
     display: flex;
     gap: 1.4rem;
+  }
+
+  /* language toggle: current language is inert, the other is a link */
+  .lang {
+    margin: 0;
+    padding-left: 1.4rem;
+    border-left: 1px solid var(--hairline);
+    color: var(--muted);
+  }
+
+  .lang a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .lang a:hover {
+    color: var(--gold);
+  }
+
+  .lang .current {
+    color: var(--ink);
+  }
+
+  .lang .sep {
+    opacity: 0.5;
+    padding: 0 0.15em;
   }
 
   .site nav a {
@@ -334,6 +372,29 @@
     margin: 0.6rem 0 0;
   }
 
+  /* quiet note on machine-translated versions, tucked under the title divider;
+     -1.5rem against the header's 3rem bottom margin = 24px gap, exactly
+     clearing the divider halo */
+  .translation-note {
+    margin: -1.5rem 0 2.5rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+
+  .translation-note a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(252, 158, 79, 0.35);
+    text-underline-offset: 2px;
+  }
+
+  .translation-note a:hover {
+    color: var(--gold);
+  }
+
   /* ---- small screens ---- */
 
   @media (max-width: 600px) {
@@ -379,11 +440,14 @@
 <div id="bg" aria-hidden="true"></div>
 
 <header class="site">
-  <a class="brand" href="/about/"{% if section == "about" %} aria-current="page"{% endif %}><span class="brand-mark" aria-hidden="true"></span>max zorzetti</a>
-  <nav>
-    <a href="/"{% if section == "blog" %} aria-current="page"{% endif %}>ramblings</a>
-    <a href="/about/"{% if section == "about" %} aria-current="page"{% endif %}>me</a>
-  </nav>
+  <a class="brand" href="{{ aboutUrl }}"{% if section == "about" %} aria-current="page"{% endif %}><span class="brand-mark" aria-hidden="true"></span>max zorzetti</a>
+  <div class="site-right">
+    <nav>
+      <a href="{{ homeUrl }}"{% if section == "blog" %} aria-current="page"{% endif %}>{{ tNav.ramblings }}</a>
+      <a href="{{ aboutUrl }}"{% if section == "about" %} aria-current="page"{% endif %}>{{ tNav.me }}</a>
+    </nav>
+    <p class="lang">{% if isPt %}<a href="{{ twinUrl }}" hreflang="en">en</a><span class="sep">/</span><span class="current">pt</span>{% else %}<span class="current">en</span><span class="sep">/</span><a href="{{ twinUrl }}" hreflang="pt-BR">pt</a>{% endif %}</p>
+  </div>
 </header>
 
 <main>

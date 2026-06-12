@@ -3,14 +3,14 @@ layout: base.njk
 section: blog
 title: Blog
 ---
-{% for post in collections.post | reverse %}
+{% for post in collections["post-pt"] | reverse %}
 <article>
   <header class="post-header">
     <p class="meta">{{ post.date | readableDate(lang) }}</p>
     <h1><a href="{{ post.url }}">{{ post.data.title }}</a></h1>
     {% if post.data.deck %}<p class="deck">{{ post.data.deck }}</p>{% endif %}
   </header>
-  {% if post.data.autotranslated %}<p class="translation-note">original in <a href="/pt{{ post.url }}">PT</a></p>{% endif %}
+  {% if post.data.autotranslated %}<p class="translation-note">original em <a href="{{ post.url | replace("/pt/", "/") }}">EN</a></p>{% endif %}
   {{ post.templateContent | safe }}
 </article>
 {% endfor %}

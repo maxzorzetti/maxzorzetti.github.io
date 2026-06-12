@@ -6,7 +6,7 @@ title: Hi, I'm Max
 deck: and here's a summary of me.
 ---
 
-I've been a computers guy ever since I got a hold of one when I was a kid, and thigings have been gradually escalating since then.
+I've been a computers guy ever since I got a hold of one when I was a kid, and things have been gradually escalating since then.
 
 My hobbies include mostly geeky stuff, such as reading sci-fi and fantasy, tabletop role-playing games, and playing _a lot_ of video games.
 I've dabbled in developing a few games too, but most of my project fizzle out before they are done, though I _swear_ I'll get around to finishing them someday.

@@ -22,8 +22,8 @@ module.exports = function (eleventyConfig) {
       .use(require("markdown-it-implicit-figures"), { figcaption: "title" })
   );
 
-  eleventyConfig.addFilter("readableDate", (date) =>
-    new Date(date).toLocaleDateString("en-US", {
+  eleventyConfig.addFilter("readableDate", (date, locale) =>
+    new Date(date).toLocaleDateString(locale === "pt" ? "pt-BR" : "en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
