@@ -14,8 +14,13 @@ module.exports = function (eleventyConfig) {
   // post images: src/images/foo.jpg → /images/foo.jpg
   eleventyConfig.addPassthroughCopy("src/images");
 
-  // {key=value} / {.class} annotations in markdown, e.g. ![alt](/images/x.jpg){width=320}
-  eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(require("markdown-it-attrs")));
+  // {key=value} / {.class} annotations in markdown, e.g. ![alt](/images/x.jpg){width=320},
+  // and figure/figcaption wrapping: ![alt](src "the quoted title becomes the caption")
+  eleventyConfig.amendLibrary("md", (mdLib) =>
+    mdLib
+      .use(require("markdown-it-attrs"))
+      .use(require("markdown-it-implicit-figures"), { figcaption: "title" })
+  );
 
   eleventyConfig.addFilter("readableDate", (date) =>
     new Date(date).toLocaleDateString("en-US", {

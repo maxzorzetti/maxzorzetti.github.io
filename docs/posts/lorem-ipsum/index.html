@@ -274,6 +274,19 @@
     border: 1px solid rgba(255, 255, 255, 0.07);
   }
 
+  main figure {
+    margin: 0 0 1.5rem; /* reset browser side-margins; match paragraph rhythm */
+  }
+
+  main figcaption {
+    margin-top: 0.7rem;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+
   /* ---- index lists (blog, games, dev) ---- */
 
   .index {
@@ -374,8 +387,7 @@
   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
 <h2>Duis aute irure dolor</h2>
 <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat <code>cupidatat</code> non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-<p><img src="/images/placeholder.svg" alt="A placeholder image demonstrating the annotation syntax" width="280"></p>
-<p><em>Lorem caption: sed ut perspiciatis unde omnis.</em></p>
+<figure><img src="/images/placeholder.svg" alt="A placeholder image demonstrating the annotation syntax" width="280"><figcaption>Lorem caption: sed ut perspiciatis unde omnis.</figcaption></figure>
 <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia <a href="#">voluptas sit</a> aspernatur aut odit aut fugit.</p>
 <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
 

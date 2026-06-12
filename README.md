@@ -21,7 +21,7 @@ npm start        # serve http://localhost:8080, rebuild + reload on save
 | Post page wrapper (date · title · deck) | `src/_includes/post.njk` |
 | Section page wrapper (meta line · title · deck) | `src/_includes/page.njk` |
 | Blog posts | `src/posts/*.md` |
-| Post images | `src/images/` — reference as `![alt](/images/file.jpg)`; size with `{width=320}` |
+| Post images | `src/images/` — `![alt](/images/f.jpg "caption"){width=320}`; quoted title becomes the caption, both optional |
 | Games / dev lists | `src/_data/games.json`, `src/_data/dev.json` |
 | About page | `src/about.md` |
 | Blog index | `src/index.njk` |
