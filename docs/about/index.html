@@ -561,6 +561,17 @@
   });
   reduceMotion.addEventListener?.('change', build);
 
+  // long-hidden tabs: browsers throttle and eventually drop composited
+  // animations, which can leave the field blank (or out of phase) on return.
+  // The pattern is a pure function of viewport + wall clock, so rebuilding on
+  // re-entry is idempotent — invisible when fine, restorative when not.
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) build();
+  });
+  addEventListener('pageshow', (event) => {
+    if (event.persisted) build(); // back/forward-cache restore: re-anchor phases
+  });
+
   build();
 })();
 </script>
