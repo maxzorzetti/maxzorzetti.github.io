@@ -561,6 +561,20 @@
     if (event.persisted) build(); // back/forward-cache restore: re-anchor phases
   });
 
+  // toy: clicking the brand mark spins it in place (and doesn't navigate);
+  // clicking the name still goes to /about/. Each click layers an additive
+  // quarter-turn — overlapping spins stack smoothly, and since 90° is a
+  // visual identity for the square, layers starting/finishing are seamless.
+  const mark = document.querySelector('.brand-mark');
+  mark?.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (reduceMotion.matches) return;
+    mark.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(180deg)' }],
+      { duration: 900, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', composite: 'add' }
+    );
+  });
+
   build();
 })();
 </script>
