@@ -1,6 +1,6 @@
 ---
 title: Long overdue
-deck: Something on the backburner for almost a decade.
+deck: Something on the back burner for almost a decade.
 date: 2026-06-11
 ---
 
