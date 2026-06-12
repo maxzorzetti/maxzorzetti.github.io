@@ -14,6 +14,9 @@ module.exports = function (eleventyConfig) {
   // post images: src/images/foo.jpg → /images/foo.jpg
   eleventyConfig.addPassthroughCopy("src/images");
 
+  // tell GitHub Pages to skip its Jekyll pass — docs/ is already-built HTML
+  eleventyConfig.addPassthroughCopy("src/.nojekyll");
+
   // {key=value} / {.class} annotations in markdown, e.g. ![alt](/images/x.jpg){width=320},
   // and figure/figcaption wrapping: ![alt](src "the quoted title becomes the caption")
   eleventyConfig.amendLibrary("md", (mdLib) =>
