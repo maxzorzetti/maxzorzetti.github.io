@@ -142,9 +142,8 @@
     background: currentColor;
   }
 
-  .brand[aria-current="page"] {
-    color: var(--accent); /* matches the nav's active-orange convention */
-  }
+  /* the brand keeps its resting color even on /about/ (aria-current stays in
+     the markup for accessibility); only the nav's about link goes orange */
 
   .post-header {
     position: relative;
