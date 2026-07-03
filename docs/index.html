@@ -123,7 +123,6 @@
        only matters before the script runs / with reduced motion) */
     inset: calc(-1 * var(--glow-extent, 0.7em));
     background: var(--glow-bg, none);
-    clip-path: var(--glow-clip, none);
     pointer-events: none;
   }
 
@@ -749,7 +748,9 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
           { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
           { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`, opacity: 0 },
         ],
-        { duration: 450 + Math.random() * 350, easing: 'cubic-bezier(0.2, 0.6, 0.3, 1)' }
+        // lifetime grows with heat: hotter clicks fling longer-lived sparks
+        { duration: 450 + Math.max(0, heat - SPARK_HEAT_START) * 400 + Math.random() * 350,
+          easing: 'cubic-bezier(0.2, 0.6, 0.3, 1)' }
       );
       fly.finished.catch(() => {}).finally(() => spark.remove());
     }
@@ -761,11 +762,12 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   // interpolates smoothly and fades to nothing as it cools. No discrete tiers,
   // no CSS transitions to snap at the edges: the rAF loop *is* the animation.
   const HEAT_PER_CLICK = 0.08; // raw heat added per click
-  const HEAT_MAX       = 3;    // cap; overcharging all the way here trips the easter egg
-  const GLOW_MAX       = 1.5;  // heat at which glow + stroke top out (below the cap)
+  const HEAT_MAX       = 3;    // cap; glow + stroke grow all the way here, and it trips the easter egg
+  const GLOW_FULL      = 1.5;  // glow + stroke reach their old full here, then keep growing past it to HEAT_MAX
   const COOL_RATE      = 0.30; // heat bled off per second (slower = longer phases)
   const HEAT_FLOOR     = 0.35; // heat must clear this before anything shows
   const SPARK_FROM     = 0.8;  // level (0..1) above which a click throws sparks
+  const SPARK_HEAT_START = HEAT_FLOOR + SPARK_FROM * (1 - HEAT_FLOOR); // raw heat where sparks begin
   const MAX_PINCH      = 0;    // curve control offset at full heat (0 = faces stay flat)
   const STROKE_BASE    = 17.4; // resting stroke width (≈0.2em; also the CSS default)
   const STROKE_GROW    = 18;   // extra stroke width at full heat, growing inward
@@ -788,24 +790,10 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     [1.0,      [255, 255, 255]],
   ];
 
-  // Frame clip for the halo (::before): the full box with the (pinched) square
-  // punched out, so the glow rings the mark and skips the hollow middle. The
-  // inner loop runs opposite the outer so the nonzero fill rule leaves a hole.
-  const GLOW_EXTENT = 1.6; // em past the mark (max halo reach); pushed to CSS
-  const GLOW_M = 100 * GLOW_EXTENT / (1.15 + 2 * GLOW_EXTENT); // inner margin, %
+  // Halo box half-extent (em past the mark), pushed to CSS so the ::before inset
+  // matches. The radial glow fades to transparent within this box.
+  const GLOW_EXTENT = 2.6;
   if (mark) mark.style.setProperty('--glow-extent', GLOW_EXTENT + 'em');
-  function glowClip(pinchFrac) {
-    const span = 100 - 2 * GLOW_M;
-    const ip = (pinchFrac * MAX_PINCH / 100) * span; // face dip, glow-box %
-    const a = GLOW_M.toFixed(2);
-    const b = (100 - GLOW_M).toFixed(2);
-    const t = (GLOW_M + ip).toFixed(2);
-    const s = (100 - GLOW_M - ip).toFixed(2);
-    return 'polygon(' +
-      '0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, ' + // outer box + seam
-      `${a}% ${a}%, ${t}% 50%, ${a}% ${b}%, 50% ${s}%, ${b}% ${b}%, ${s}% 50%, ${b}% ${a}%, 50% ${t}%, ${a}% ${a}%` +
-      ')';
-  }
 
   function heatColor(level) {
     for (let i = 1; i < HEAT_RAMP.length; i++) {
@@ -837,7 +825,6 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     if (level <= 0.001) { // below the floor — hand everything back to the CSS
       mark.style.color = '';
       mark.style.removeProperty('--glow-bg');
-      mark.style.removeProperty('--glow-clip');
       if (markPath) { // flat square, resting width (back to the CSS default)
         markPath.setAttribute('d', markPathD(STROKE_BASE / 2, 0));
         markPath.style.strokeWidth = '';
@@ -852,20 +839,26 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     // growing past white (where color/pinch have maxed out) all the way to
     // HEAT_MAX. `giBase` is steady; `giGlow` adds a top-end flicker so white-hot
     // feels alive (kept off the stroke width so the line doesn't jitter).
-    const giBase = Math.max(0, (Math.min(heat, GLOW_MAX) - HEAT_FLOOR) / (GLOW_MAX - HEAT_FLOOR));
+    // normalized to GLOW_FULL (so white-hot keeps its old strength) but NOT
+    // clamped to 1 — it keeps climbing past that up to HEAT_MAX
+    const giBase = Math.max(0, (Math.min(heat, HEAT_MAX) - HEAT_FLOOR) / (GLOW_FULL - HEAT_FLOOR));
     let giGlow = giBase;
     if (level > SPARK_FROM) {
       giGlow *= 1 + 0.12 * Math.sin(now / 55) * ((level - SPARK_FROM) / (1 - SPARK_FROM));
     }
 
     mark.style.color = `rgb(${rgb})`;
-    // radial halo (::before): its radius and brightness grow with giGlow, shaped
-    // by a frame clip that follows the pinch
-    const reach = (GLOW_EXTENT * (0.4 + 0.6 * giGlow)).toFixed(3);
+    // Radial halo (::before): a soft ring with a transparent CENTER (in em, so it
+    // clears the hollow mark) fading to transparent at `reach`. No clip-path —
+    // every edge is a soft gradient stop, so there's no hard/square boundary and
+    // nothing rotationally visible. Radius + brightness grow with giGlow; reach is
+    // clamped inside the box (so it never paints a rectangular edge) and above a
+    // floor (so the em stops stay in order).
+    const boxHalf = 0.575 + GLOW_EXTENT; // em, center to nearest box edge (mark is 1.15em)
+    const reach = Math.max(1.5, Math.min(GLOW_EXTENT * (0.5 + 0.4 * giGlow), boxHalf * 0.85)).toFixed(3);
+    const a = Math.min(0.9, 0.6 * giGlow).toFixed(3);
     mark.style.setProperty('--glow-bg',
-      `radial-gradient(circle ${reach}em at center, rgba(${rgb}, ${(0.65 * giGlow).toFixed(3)}) 0%, ` +
-      `rgba(${rgb}, ${(0.32 * giGlow).toFixed(3)}) 45%, transparent 100%)`);
-    mark.style.setProperty('--glow-clip', glowClip(pinchFrac));
+      `radial-gradient(circle at center, transparent 0.6em, rgba(${rgb}, ${a}) 1.05em, transparent ${reach}em)`);
 
     // outline: faces bow inward (pinchFrac) and the stroke thickens with heat,
     // growing inward — inset tracks half the width so the outer edge stays put.
