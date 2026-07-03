@@ -158,6 +158,17 @@
     z-index: 1000;
   }
 
+  /* easter egg: overcharge the mark and this sphere bursts out, inverting the
+     whole page (JS grows the clip circle from the mark, then fades it away) */
+  .warudo {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    backdrop-filter: invert(1);
+    -webkit-backdrop-filter: invert(1);
+  }
+
   .site-right {
     display: flex;
     align-items: center;
@@ -750,11 +761,12 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   // interpolates smoothly and fades to nothing as it cools. No discrete tiers,
   // no CSS transitions to snap at the edges: the rAF loop *is* the animation.
   const HEAT_PER_CLICK = 0.08; // raw heat added per click
-  const HEAT_MAX       = 1.5;  // cap; >1 banks reserve that extends white-hot
+  const HEAT_MAX       = 3;    // cap; overcharging all the way here trips the easter egg
+  const GLOW_MAX       = 1.5;  // heat at which glow + stroke top out (below the cap)
   const COOL_RATE      = 0.30; // heat bled off per second (slower = longer phases)
   const HEAT_FLOOR     = 0.35; // heat must clear this before anything shows
   const SPARK_FROM     = 0.8;  // level (0..1) above which a click throws sparks
-  const MAX_PINCH      = 5;    // curve control offset at full heat (bow ≈ half this)
+  const MAX_PINCH      = 0;    // curve control offset at full heat (0 = faces stay flat)
   const STROKE_BASE    = 17.4; // resting stroke width (≈0.2em; also the CSS default)
   const STROKE_GROW    = 18;   // extra stroke width at full heat, growing inward
 
@@ -840,7 +852,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     // growing past white (where color/pinch have maxed out) all the way to
     // HEAT_MAX. `giBase` is steady; `giGlow` adds a top-end flicker so white-hot
     // feels alive (kept off the stroke width so the line doesn't jitter).
-    const giBase = Math.max(0, (Math.min(heat, HEAT_MAX) - HEAT_FLOOR) / (HEAT_MAX - HEAT_FLOOR));
+    const giBase = Math.max(0, (Math.min(heat, GLOW_MAX) - HEAT_FLOOR) / (GLOW_MAX - HEAT_FLOOR));
     let giGlow = giBase;
     if (level > SPARK_FROM) {
       giGlow *= 1 + 0.12 * Math.sin(now / 55) * ((level - SPARK_FROM) / (1 - SPARK_FROM));
@@ -899,11 +911,54 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     }
   }
 
+  // easter egg: overcharge to HEAT_MAX and a sphere bursts from the mark,
+  // inverting the whole page — and it *stays* inverted. Overcharge again and the
+  // sphere retracts back into the mark, restoring. A clean toggle.
+  let warudoActive = false;  // true while a sphere is animating (clicks frozen)
+  let warudoOverlay = null;  // the persisted inversion layer, or null
+  function triggerWarudo() {
+    warudoActive = true;
+    const rect = mark.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    // radius that reaches the farthest viewport corner, so it fully covers
+    const maxR = Math.hypot(Math.max(cx, innerWidth - cx), Math.max(cy, innerHeight - cy));
+    const full = `circle(${maxR}px at ${cx}px ${cy}px)`;
+    const none = `circle(0px at ${cx}px ${cy}px)`;
+
+    if (warudoOverlay) { // already inverted — pull it back into the mark, restore
+      const o = warudoOverlay;
+      warudoOverlay = null;
+      const anim = o.animate([{ clipPath: full }, { clipPath: none }],
+        { duration: 650, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
+      anim.finished.catch(() => {}).finally(() => {
+        o.remove();
+        warudoActive = false;
+        heat = 0;
+      });
+      return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'warudo';
+    document.body.appendChild(overlay);
+    const anim = overlay.animate([{ clipPath: none }, { clipPath: full }],
+      { duration: 650, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
+    anim.finished.catch(() => {}).finally(() => {
+      anim.cancel(); // drop the forwards-fill so clip-path returns to none (full
+                     // cover) — stays covering even if the window is resized
+      warudoOverlay = overlay; // persist: the page stays inverted
+      warudoActive = false;
+      heat = 0; // discharge
+    });
+  }
+
   mark?.addEventListener('click', (event) => {
     event.preventDefault();
-    if (reduceMotion.matches) return;
+    if (reduceMotion.matches || warudoActive) return; // frozen during the burst
     spinVel += SPIN_KICK; // kick the spin; friction + heat carry it (see frame)
     heat = Math.min(HEAT_MAX, heat + HEAT_PER_CLICK); // banked heat lingers, up to the cap
+    if (heat >= HEAT_MAX) triggerWarudo(); // fully overcharged — trip the easter egg
     // sparks only fly on a click, and only once it's running white-hot; the
     // burst grows with how far past the threshold this click pushed it
     const level = levelOf(heat);
