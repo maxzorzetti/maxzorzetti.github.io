@@ -740,7 +740,7 @@
   // interpolates smoothly and fades to nothing as it cools. No discrete tiers,
   // no CSS transitions to snap at the edges: the rAF loop *is* the animation.
   const HEAT_PER_CLICK = 0.08; // raw heat added per click
-  const HEAT_MAX       = 3;    // cap; glow + stroke grow all the way here, and it trips the easter egg
+  const HEAT_MAX       = 2.5;  // cap; glow + stroke grow all the way here, and it trips the easter egg
   const GLOW_FULL      = 1.5;  // glow + stroke reach their old full here, then keep growing past it to HEAT_MAX
   const COOL_RATE      = 0.30; // heat bled off per second (slower = longer phases)
   const HEAT_FLOOR     = 0.35; // heat must clear this before anything shows
