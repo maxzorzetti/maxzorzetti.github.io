@@ -747,7 +747,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
           { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`, opacity: 0 },
         ],
         // lifetime grows with heat: hotter clicks fling longer-lived sparks
-        { duration: 450 + Math.max(0, heat - SPARK_HEAT_START) * 400 + Math.random() * 350,
+        { duration: 450 + Math.max(0, heat - SPARK_FROM) * 400 + Math.random() * 350,
           easing: 'cubic-bezier(0.2, 0.6, 0.3, 1)' }
       );
       fly.finished.catch(() => {}).finally(() => spark.remove());
@@ -762,10 +762,9 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   const HEAT_PER_CLICK = 0.08; // raw heat added per click
   const HEAT_MAX       = 2.5;  // cap; glow + stroke grow all the way here, and it trips the easter egg
   const GLOW_FULL      = 1.5;  // glow + stroke reach their old full here, then keep growing past it to HEAT_MAX
-  const COOL_RATE      = 0.30; // heat bled off per second (slower = longer phases)
+  const COOL_RATE      = 0.20; // heat bled off per second (slower = longer phases)
   const HEAT_FLOOR     = 0.35; // heat must clear this before anything shows
-  const SPARK_FROM     = 0.8;  // level (0..1) above which a click throws sparks
-  const SPARK_HEAT_START = HEAT_FLOOR + SPARK_FROM * (1 - HEAT_FLOOR); // raw heat where sparks begin
+  const SPARK_FROM     = 1.1;  // raw heat above which a click throws sparks (also gates flicker/pinch)
   const MAX_PINCH      = 0;    // curve control offset at full heat (0 = faces stay flat)
   const STROKE_BASE    = 17.4; // resting stroke width (≈0.2em; also the CSS default)
   const STROKE_GROW    = 18;   // extra stroke width at full heat, growing inward
@@ -779,13 +778,14 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   const ALIGN_MIN  = 150; // floor on settle speed (deg/sec) so it snaps home
                           // instead of crawling the last few degrees
 
-  // color ramp by level: resting white -> orange -> red -> white-hot. Stops are
-  // spaced in equal thirds so each colored phase holds for the same stretch.
+  // color ramp keyed straight off raw heat: white -> orange -> red -> white-hot.
+  // Stops are heat values (self-documenting thresholds) — raise the last one to
+  // make each color phase last longer. Only read once heat clears HEAT_FLOOR.
   const HEAT_RAMP = [
-    [0.0,      [255, 255, 255]],
-    [1 / 3,    [252, 158, 79]],
-    [2 / 3,    [244, 68, 46]],
-    [1.0,      [255, 255, 255]],
+    [0.35, [255, 255, 255]], // floor: white
+    [0.75, [252, 158, 79]],  // orange
+    [1.10, [244, 68, 46]],   // red
+    [1.50, [255, 255, 255]], // white-hot
   ];
 
   // Halo box half-extent (em past the mark), pushed to CSS so the ::before inset
@@ -793,24 +793,22 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   const GLOW_EXTENT = 2.6;
   if (mark) mark.style.setProperty('--glow-extent', GLOW_EXTENT + 'em');
 
-  function heatColor(level) {
+  function heatColor(h) {
     for (let i = 1; i < HEAT_RAMP.length; i++) {
       const [p1, c1] = HEAT_RAMP[i];
-      if (level <= p1) {
+      if (h <= p1) {
         const [p0, c0] = HEAT_RAMP[i - 1];
-        const t = (level - p0) / (p1 - p0);
+        const t = (h - p0) / (p1 - p0);
         return c0.map((v, k) => Math.round(v + (c1[k] - v) * t));
       }
     }
     return HEAT_RAMP[HEAT_RAMP.length - 1][1];
   }
 
-  // Raw `heat` is uncapped so hard spam banks a reserve that just takes longer
-  // to bleed off. The *visible* level is that raw heat, clipped to 1 and
-  // remapped so nothing shows until it clears HEAT_FLOOR — a deadzone that
-  // keeps a few casual clicks from lighting the mark up.
-  function levelOf(h) {
-    return Math.max(0, Math.min(1, h) - HEAT_FLOOR) / (1 - HEAT_FLOOR);
+  // white-hot intensity 0..1: 0 at SPARK_FROM, 1 at the cap. Drives the spark
+  // burst size, the glow flicker, and (when enabled) the face pinch.
+  function hotAmount(h) {
+    return Math.max(0, Math.min(1, (h - SPARK_FROM) / (HEAT_MAX - SPARK_FROM)));
   }
 
   let heat = 0;
@@ -819,8 +817,8 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   let angle = 0;   // accumulated spin on top of the resting 20deg tilt
   let spinVel = 0; // current angular velocity from click impulses (deg/sec)
 
-  function paint(level, now) {
-    if (level <= 0.001) { // below the floor — hand everything back to the CSS
+  function paint(now) {
+    if (heat <= HEAT_FLOOR) { // below the floor — hand everything back to the CSS
       mark.style.color = '';
       mark.style.removeProperty('--glow-bg');
       if (markPath) { // flat square, resting width (back to the CSS default)
@@ -829,9 +827,10 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
       }
       return;
     }
-    const [r, g, b] = heatColor(level);
+    const [r, g, b] = heatColor(heat); // color keyed straight off raw heat
     const rgb = `${r}, ${g}, ${b}`;
-    const pinchFrac = level > SPARK_FROM ? (level - SPARK_FROM) / (1 - SPARK_FROM) : 0;
+    const si = hotAmount(heat);   // white-hot intensity 0..1 (0 below SPARK_FROM)
+    const pinchFrac = si;
 
     // Heat intensity rides RAW heat scaled to the cap, so glow + stroke keep
     // growing past white (where color/pinch have maxed out) all the way to
@@ -841,8 +840,8 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     // clamped to 1 — it keeps climbing past that up to HEAT_MAX
     const giBase = Math.max(0, (Math.min(heat, HEAT_MAX) - HEAT_FLOOR) / (GLOW_FULL - HEAT_FLOOR));
     let giGlow = giBase;
-    if (level > SPARK_FROM) {
-      giGlow *= 1 + 0.12 * Math.sin(now / 55) * ((level - SPARK_FROM) / (1 - SPARK_FROM));
+    if (heat > SPARK_FROM) {
+      giGlow *= 1 + 0.12 * Math.sin(now / 55) * si;
     }
 
     mark.style.color = `rgb(${rgb})`;
@@ -873,7 +872,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     heat = Math.max(0, heat - COOL_RATE * dt);
     if (!warudoArmed && heat < HEAT_MAX * 0.6) warudoArmed = true; // cooled enough to re-fire
     spinVel *= Math.exp(-SPIN_DAMP * dt); // click impulse decays with friction
-    paint(levelOf(heat), now);
+    paint(now);
 
     // Still turning while there's heat (idle spin) or leftover click momentum.
     if (heat > 0 || Math.abs(spinVel) > SPIN_STOP) {
@@ -894,7 +893,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     if (Math.abs(step) >= Math.abs(diff)) { // reached (or would overshoot) home
       angle = 0;
       mark.style.transform = '';
-      paint(0, now);
+      paint(now); // heat is 0 here, so this clears everything
       rafId = null;
     } else {
       angle += step;
@@ -957,9 +956,8 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     }
     // sparks only fly on a click, and only once it's running white-hot; the
     // burst grows with how far past the threshold this click pushed it
-    const level = levelOf(heat);
-    if (level > SPARK_FROM) {
-      throwSparks(4 + Math.round(8 * (level - SPARK_FROM) / (1 - SPARK_FROM)));
+    if (heat > SPARK_FROM) {
+      throwSparks(4 + Math.round(8 * hotAmount(heat)));
     }
     if (rafId == null) { // kick the cooldown loop if it isn't already running
       lastT = performance.now();
