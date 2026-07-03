@@ -871,6 +871,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     const dt = Math.min(0.05, (now - lastT) / 1000); // clamp across tab switches
     lastT = now;
     heat = Math.max(0, heat - COOL_RATE * dt);
+    if (!warudoArmed && heat < HEAT_MAX * 0.6) warudoArmed = true; // cooled enough to re-fire
     spinVel *= Math.exp(-SPIN_DAMP * dt); // click impulse decays with friction
     paint(levelOf(heat), now);
 
@@ -907,6 +908,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   // sphere retracts back into the mark, restoring. A clean toggle.
   let warudoActive = false;  // true while a sphere is animating (clicks frozen)
   let warudoOverlay = null;  // the persisted inversion layer, or null
+  let warudoArmed = true;    // re-arms only after heat drops, so it can't instantly re-fire
   function triggerWarudo() {
     warudoActive = true;
     const rect = mark.getBoundingClientRect();
@@ -925,7 +927,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
       anim.finished.catch(() => {}).finally(() => {
         o.remove();
         warudoActive = false;
-        heat = 0;
+        // no hard discharge — the mark cools through its normal ramp
       });
       return;
     }
@@ -940,7 +942,7 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
                      // cover) — stays covering even if the window is resized
       warudoOverlay = overlay; // persist: the page stays inverted
       warudoActive = false;
-      heat = 0; // discharge
+      // no hard discharge — the mark cools through its normal ramp
     });
   }
 
@@ -949,7 +951,10 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     if (reduceMotion.matches || warudoActive) return; // frozen during the burst
     spinVel += SPIN_KICK; // kick the spin; friction + heat carry it (see frame)
     heat = Math.min(HEAT_MAX, heat + HEAT_PER_CLICK); // banked heat lingers, up to the cap
-    if (heat >= HEAT_MAX) triggerWarudo(); // fully overcharged — trip the easter egg
+    if (heat >= HEAT_MAX && warudoArmed) { // fully overcharged — trip the easter egg
+      warudoArmed = false;
+      triggerWarudo();
+    }
     // sparks only fly on a click, and only once it's running white-hot; the
     // burst grows with how far past the threshold this click pushed it
     const level = levelOf(heat);
