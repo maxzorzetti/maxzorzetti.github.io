@@ -102,13 +102,48 @@
     width: 1.15em;
     height: 1.15em;
     box-sizing: border-box;
-    border: 0.2em solid currentColor;
-    border-radius: 1px;
+    position: relative; /* anchor for the ::before halo and the SVG outline */
     transform: rotate(20deg);
     opacity: 0.85;
-    color: #fff; /* resting white. When it heats up, JS paints the color and
-                    glow inline every frame off a continuous `heat` value — see
-                    the brand-mark toy in the script below. */
+    color: #fff; /* resting white. When it heats up JS paints the color (stroke
+                    inherits it), the halo, and the outline's curve every frame
+                    off a continuous `heat` value — see the toy in the script. */
+  }
+
+  /* Soft radial halo, on ::before so it sits behind the outline. Its clip is a
+     *frame* (the whole box minus the square) so the glow only rings the mark and
+     never bleeds into the hollow middle — and since that cut-out is the pinched
+     square, the halo's inner edge buckles right along with the faces. No filter,
+     so nothing flickers with the spin transform. Keep this inset in sync with
+     GLOW_EXTENT in the script (0.7em). */
+  .brand-mark::before {
+    content: '';
+    position: absolute;
+    /* halo reach; the value comes from GLOW_EXTENT in the script (fallback here
+       only matters before the script runs / with reduced motion) */
+    inset: calc(-1 * var(--glow-extent, 0.7em));
+    background: var(--glow-bg, none);
+    clip-path: var(--glow-clip, none);
+    pointer-events: none;
+  }
+
+  /* The square outline is an SVG stroke (not a clipped border) so it keeps a
+     constant width as its faces bow inward — JS rewrites the path `d` each frame
+     (see the toy script). viewBox is 0..100; stroke 17.4 ≈ 0.2em on a 1.15em
+     box, path inset by half that so the stroke sits inside like the old border. */
+  .brand-mark-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+  .brand-mark-svg path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 17.4;
+    stroke-linejoin: round;
   }
 
   /* white sparks flung from the mark when it runs white-hot */
@@ -449,7 +484,7 @@
 <div id="bg" aria-hidden="true"></div>
 
 <header class="site">
-  <a class="brand" href="/about/"><span class="brand-mark" aria-hidden="true"></span>max zorzetti</a>
+  <a class="brand" href="/about/"><span class="brand-mark" aria-hidden="true"><svg class="brand-mark-svg" viewBox="0 0 100 100"><path d="M8.7 8.7 L91.3 8.7 L91.3 91.3 L8.7 91.3 Z"/></svg></span>max zorzetti</a>
   <div class="site-right">
     <nav>
       <a href="/" aria-current="page">ramblings</a>
@@ -666,6 +701,20 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   // nearest quarter-turn when it stops (see frame()), which is a visual
   // identity for the square, so it always rests at the design's 20deg tilt.
   const mark = document.querySelector('.brand-mark');
+  const markPath = mark?.querySelector('.brand-mark-svg path');
+
+  // Outline path in the SVG's 0..100 viewBox. Corners sit at `inset` (= half the
+  // stroke width, so the stroke's outer edge always lands on the box edge — the
+  // line thickens inward as `inset` grows). Each face is a quadratic curve whose
+  // control point bows inward by `c` (0 = flat square).
+  function markPathD(inset, c) {
+    const n = inset.toFixed(1);         // near corner
+    const f = (100 - inset).toFixed(1); // far corner
+    const lo = (inset + c).toFixed(1);
+    const hi = (100 - inset - c).toFixed(1);
+    return `M${n} ${n} Q50 ${lo} ${f} ${n} Q${hi} 50 ${f} ${f} ` +
+           `Q50 ${hi} ${n} ${f} Q${lo} 50 ${n} ${n} Z`;
+  }
 
   // fling a burst of white sparks outward from the mark's center
   function throwSparks(count) {
@@ -703,6 +752,9 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   const COOL_RATE      = 0.30; // heat bled off per second (slower = longer phases)
   const HEAT_FLOOR     = 0.35; // heat must clear this before anything shows
   const SPARK_FROM     = 0.8;  // level (0..1) above which a click throws sparks
+  const MAX_PINCH      = 5;    // curve control offset at full heat (bow ≈ half this)
+  const STROKE_BASE    = 17.4; // resting stroke width (≈0.2em; also the CSS default)
+  const STROKE_GROW    = 18;   // extra stroke width at full heat, growing inward
 
   const SPIN_KICK  = 430; // deg/sec of spin added per click
   const SPIN_DAMP  = 2.4; // friction on that click impulse, per second
@@ -721,6 +773,25 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
     [2 / 3,    [244, 68, 46]],
     [1.0,      [255, 255, 255]],
   ];
+
+  // Frame clip for the halo (::before): the full box with the (pinched) square
+  // punched out, so the glow rings the mark and skips the hollow middle. The
+  // inner loop runs opposite the outer so the nonzero fill rule leaves a hole.
+  const GLOW_EXTENT = 1.6; // em past the mark (max halo reach); pushed to CSS
+  const GLOW_M = 100 * GLOW_EXTENT / (1.15 + 2 * GLOW_EXTENT); // inner margin, %
+  if (mark) mark.style.setProperty('--glow-extent', GLOW_EXTENT + 'em');
+  function glowClip(pinchFrac) {
+    const span = 100 - 2 * GLOW_M;
+    const ip = (pinchFrac * MAX_PINCH / 100) * span; // face dip, glow-box %
+    const a = GLOW_M.toFixed(2);
+    const b = (100 - GLOW_M).toFixed(2);
+    const t = (GLOW_M + ip).toFixed(2);
+    const s = (100 - GLOW_M - ip).toFixed(2);
+    return 'polygon(' +
+      '0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, ' + // outer box + seam
+      `${a}% ${a}%, ${t}% 50%, ${a}% ${b}%, 50% ${s}%, ${b}% ${b}%, ${s}% 50%, ${b}% ${a}%, 50% ${t}%, ${a}% ${a}%` +
+      ')';
+  }
 
   function heatColor(level) {
     for (let i = 1; i < HEAT_RAMP.length; i++) {
@@ -749,22 +820,46 @@ In the end, I hardly managed to hand them out (which wasn't a surprise at all, t
   let spinVel = 0; // current angular velocity from click impulses (deg/sec)
 
   function paint(level, now) {
-    if (level <= 0.001) { // below the floor — hand color/glow back to the CSS
+    if (level <= 0.001) { // below the floor — hand everything back to the CSS
       mark.style.color = '';
-      mark.style.boxShadow = '';
+      mark.style.removeProperty('--glow-bg');
+      mark.style.removeProperty('--glow-clip');
+      if (markPath) { // flat square, resting width (back to the CSS default)
+        markPath.setAttribute('d', markPathD(STROKE_BASE / 2, 0));
+        markPath.style.strokeWidth = '';
+      }
       return;
     }
     const [r, g, b] = heatColor(level);
     const rgb = `${r}, ${g}, ${b}`;
-    // a subtle flicker rides the top of the range so white-hot feels alive
-    let glow = level;
+    const pinchFrac = level > SPARK_FROM ? (level - SPARK_FROM) / (1 - SPARK_FROM) : 0;
+
+    // Heat intensity rides RAW heat scaled to the cap, so glow + stroke keep
+    // growing past white (where color/pinch have maxed out) all the way to
+    // HEAT_MAX. `giBase` is steady; `giGlow` adds a top-end flicker so white-hot
+    // feels alive (kept off the stroke width so the line doesn't jitter).
+    const giBase = Math.max(0, (Math.min(heat, HEAT_MAX) - HEAT_FLOOR) / (HEAT_MAX - HEAT_FLOOR));
+    let giGlow = giBase;
     if (level > SPARK_FROM) {
-      glow *= 1 + 0.12 * Math.sin(now / 55) * ((level - SPARK_FROM) / (1 - SPARK_FROM));
+      giGlow *= 1 + 0.12 * Math.sin(now / 55) * ((level - SPARK_FROM) / (1 - SPARK_FROM));
     }
+
     mark.style.color = `rgb(${rgb})`;
-    mark.style.boxShadow =
-      `0 0 ${(0.3 + 0.55 * glow).toFixed(3)}em ${(0.12 * glow).toFixed(3)}em rgba(${rgb}, ${(0.35 + 0.5 * glow).toFixed(3)}), ` +
-      `0 0 ${(0.8 + 1.1 * glow).toFixed(3)}em ${(0.32 * glow).toFixed(3)}em rgba(${rgb}, ${(0.15 + 0.4 * glow).toFixed(3)})`;
+    // radial halo (::before): its radius and brightness grow with giGlow, shaped
+    // by a frame clip that follows the pinch
+    const reach = (GLOW_EXTENT * (0.4 + 0.6 * giGlow)).toFixed(3);
+    mark.style.setProperty('--glow-bg',
+      `radial-gradient(circle ${reach}em at center, rgba(${rgb}, ${(0.65 * giGlow).toFixed(3)}) 0%, ` +
+      `rgba(${rgb}, ${(0.32 * giGlow).toFixed(3)}) 45%, transparent 100%)`);
+    mark.style.setProperty('--glow-clip', glowClip(pinchFrac));
+
+    // outline: faces bow inward (pinchFrac) and the stroke thickens with heat,
+    // growing inward — inset tracks half the width so the outer edge stays put.
+    if (markPath) {
+      const sw = STROKE_BASE + STROKE_GROW * giBase;
+      markPath.setAttribute('d', markPathD(sw / 2, pinchFrac * MAX_PINCH));
+      markPath.style.strokeWidth = sw.toFixed(2);
+    }
   }
 
   function frame(now) {
